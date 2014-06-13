@@ -1,0 +1,44 @@
+export http_proxy=<%= @http_proxy %>
+export https_proxy=<%= @https_proxy %>
+export no_proxy=<%= @no_proxy %>
+export host_ip=<%= @host_ip %>
+
+## Add proxy settings to relevant tooling
+
+## wget
+[ -w $HOME ] && cat << --- > $HOME/.wgetrc
+https_proxy = <%= @https_proxy %>
+http_proxy  = <%= @http_proxy %>
+ftp_proxy   = <%= @http_proxy %>
+no_proxy    = <%= @no_proxy %>
+use_proxy   = on
+---
+
+## curl
+[ -w $HOME ] && cat << --- > $HOME/.curlrc
+proxy=<%= @http_proxy %>
+noproxy=<%= @no_proxy %>
+---
+
+## ruby gem
+[ -w $HOME ] && cat << --- > $HOME/.gemrc
+gem: --http-proxy=<%= @http_proxy %> --no-ri --no-rdoc
+:sources:
+- http://rubygems.org
+---
+
+## python pip
+[ -w $HOME ] && mkdir -p $HOME/.pip && cat << --- > $HOME/.pip/pip.conf
+[global]
+proxy=<%= @http_proxy %>
+---
+
+## git
+[ -w $HOME ] && cat << --- > $HOME/.gitconfig
+[http]
+proxy = <%= @http_proxy %>
+[url "https://github.com/"]
+insteadOf = git://github.com/
+[url "https://github.com/"]
+insteadOf = git@github.com:
+---
