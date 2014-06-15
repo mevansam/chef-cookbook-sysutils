@@ -8,12 +8,13 @@ def get_updated_config_file_data(values_to_add, values_to_remove, format_in, for
     if !File.exists?(config_file)
         File.open(config_file, 'w+') { |f| f.write("") }
     end
-    config_files = [ config_file ]
-    
+   
+    config_files = [ ] 
     if !daemon_config_dir.nil? && Dir.exists?(daemon_config_dir)
-        
         config_files.concat(Dir.entries(daemon_config_dir).select { |e| e != "." && e != ".." }.collect { |e| "#{daemon_config_dir}/#{e}"})
-        config_file = "#{daemon_config_dir}/999-#{::File.basename(config_file)}"
+    end
+    unless config_files.include?(config_file)
+        config_files << config_file
     end
     
     file_data = { }
@@ -85,7 +86,7 @@ def get_updated_config_file_data(values_to_add, values_to_remove, format_in, for
         end
     end
 
-    Chef::Log.debug("  - New values remaining to add: #{new_values}")
+    Chef::Log.debug("New values remaining to add: #{new_values}")
     
     if new_values.size > 0
         if file_data.has_key?(config_file)

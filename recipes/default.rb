@@ -104,46 +104,89 @@ if !node.attribute?("package_repos_updated") &&
     node["env"]["package_repos"].has_key?(platform_family) &&
     node["env"]["package_repos"][platform_family].size > 0
 
-    node["env"]["package_repos"][platform_family].each do |repo|
+    needs_update = false
 
+    package_repos = node.attribute?("osenv") && node["osenv"].attribute?("package_repos") ?
+        node["osenv"]["package_repos"] : [ ]
+
+    node["env"]["package_repos"][platform_family].each do |repo_detail|
+
+        repo_detail_desc = "#{repo_detail}"
+        if !package_repos.include?(repo_detail_desc)
+
+            case platform_family
+                when "fedora", "rhel"
+                    execute "adding yum repo '#{repo_detail}'" do
+                        command "yum-config-manager --add-repo #{repo_detail}"
+                    end
+
+                when "debian"
+
+                    name = repo_detail[0] 
+                    uri = repo_detail[1]
+                    distribution = (repo_detail.size > 2 ? repo_detail[2] : node['lsb']['codename'])
+                    components = (repo_detail.size > 3 ? repo_detail[3].split : [ "main" ])
+                    keyserver = (repo_detail.size > 4 ? repo_detail[4] : nil)
+                    key = (repo_detail.size > 5 ? repo_detail[5] : nil)
+                    
+                    apt_repository name do
+                        uri uri
+                        distribution distribution
+                        components components
+                        keyserver keyserver
+                        key key
+                    end
+            end
+            package_repos << repo_detail_desc
+            needs_update = true
+        end
+    end
+    node.set['osenv']['package_repos'] = package_repos
+    node.save
+
+    if needs_update
         case platform_family
             when "fedora", "rhel"
-                execute "adding yum repo #{repo}" do
-                    command "yum-config-manager --add-repo #{repo}"
+                execute "update package cache" do
+                    command "yum clean all"
+                end
+                ruby_block "refresh chef yum cache" do
+                    block do
+                        yum = Chef::Provider::Package::Yum::YumCache.instance
+                        yum.reload
+                        yum.refresh
+                    end
                 end
             when "debian"
-                execute "adding apt ppa #{repo}" do
-                    command "add-apt-repository #{repo}"
+                execute "update package cache" do
+                    command "
+                        apt-get -y --force-yes install ubuntu-cloud-keyring;
+                        apt-get -y --force-yes install gplhost-archive-keyring;
+                        apt-get update
+                    "
                 end
         end
     end
-
-    case platform_family
-        when "fedora", "rhel"
-            execute "update package cache" do
-                command "yum clean all"
-            end
-            ruby_block "refresh chef yum cache" do
-                block do
-                    yum = Chef::Provider::Package::Yum::YumCache.instance
-                    yum.reload
-                    yum.refresh
-                end
-            end
-        when "debian"
-            execute "update package cache" do
-                command "apt-get update"
-            end
-    end
-
-    node.set['package_repos_updated'] = true
-    node.save
 end
 
 if node["env"]["packages"].has_key?(platform_family)
-    node["env"]["packages"][platform_family].each do |pkg|
-        package pkg do
-            action :install
+
+    node["env"]["packages"][platform_family].each do |pkg| 
+
+        case platform_family
+            when "debian"
+
+                if pkg.kind_of?(Array)
+
+                    execute "apt-get seed commands" do
+                        command pkg[0]
+                    end
+                    package pkg[1]
+                else
+                    package pkg
+                end
+            else        
+                package pkg
         end
     end
 end

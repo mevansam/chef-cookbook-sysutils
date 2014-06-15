@@ -19,15 +19,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.proxy.no_proxy = "localhost,127.0.0.1,*.fmr.com"
 
   # Set the version of chef to install using the vagrant-omnibus plugin
-  config.omnibus.chef_version = "11.12.8"
+  config.omnibus.chef_version = :latest
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "opscode_ubuntu-12.04_provisionerless"
-
+  config.vm.box = "opscode_ubuntu-12.04_chef-provisionerless"
+  
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-12.04_provisionerless.box"
-
+  config.vm.box_url = "https://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-12.04_chef-provisionerless.box"
+  
   # Assign this VM to a host-only network IP, allowing you to access it
   # via the IP. Host-only networks can talk to the host machine as well as
   # any other machines on the same network, but cannot be accessed (through this
@@ -78,7 +78,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     chef.arguments = "-l debug"
     chef.chef_server_url = "https://c2c-oschef-mmk1.fmr.com"
-    chef.validation_key_path = "../../.chef/chef-validator.pem"
+    chef.validation_key_path = "../.chef/chef-validator.pem"
     chef.validation_client_name = "chef-validator"
     chef.node_name = "a292082-osenv_dev"
 
@@ -91,11 +91,34 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         ulimit_remove: [ ],
         package_repos: {
           rhel: [ ],
-          debian: [ ] 
+          debian: [ 
+            [ 
+              "openstack", 
+              "http://ubuntu-cloud.archive.canonical.com/ubuntu", 
+              "precise-updates/havana", 
+              "main", 
+              "keyserver.ubuntu.com", 
+              "C2518248EEA14886"
+            ],
+            [ 
+              "java", 
+              "http://ppa.launchpad.net/webupd8team/java/ubuntu" 
+            ]
+          ] 
         },
         packages: {
           rhel: [ ],
-          debian: [ ],
+          debian: [ 
+            "python-mysqldb", 
+            "keystone",
+            [
+              "
+                echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections; 
+                echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
+              ",
+              "oracle-java7-installer"
+            ]
+          ]
         },
         user_certs: [ ],
         other_certs: [ ],

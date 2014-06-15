@@ -4,5 +4,7 @@ maintainer_email 'mevan.samaratunga@fmr.com'
 license          'All rights reserved'
 description      'Installs/Configures osenv'
 long_description 'Installs/Configures osenv'
-version          '0.1.0'
+version          '1.0.0'
 
+depends          'apt', '~> 2.4.0'
+depends          'yum', '~> 3.2.2'

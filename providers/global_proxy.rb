@@ -67,7 +67,7 @@ action :install do
 
         when platform_family?("debian")
 
-            osenv_config_file "/etc/apt/apt.conf" do
+            osenv_config_file "/etc/apt/apt.conf.d/01proxy" do
                 values [ 
                     [ "Acquire::http::Proxy", http_proxy ], 
                     [ "Acquire::https::Proxy", https_proxy ], 
@@ -76,6 +76,7 @@ action :install do
                 format_in Regexp.new('(\S+)\s+\"(\S+)\";')
                 format_out "%s \"%s\";"
                 comment_format "//"
+                daemon_config_dir "/etc/apt/apt.conf.d"
                 action :add
             end
     end
