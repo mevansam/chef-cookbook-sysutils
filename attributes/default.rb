@@ -24,8 +24,18 @@ default["env"]["packages"]["rhel"] = [ ]
 # selections.
 default["env"]["packages"]["debian"] = [ ]
 
-default["env"]["user_certs"] = [ ]
-default["env"]["other_certs"] = [ ]
-default["env"]["known_hosts"] = [ ]
+# Add user groups
+default["env"]["groups"] = [ ]
 
-default["env"]["user_groups"] = [ ]
+# Add users - array of 
+#
+# - [ user_name, home_dir, group_name_or_id, is_passwordless_sudo, [ authorized_key_1, authorized_key_2, ... ], user_cert ]
+#
+# * if home_dir is nil then the user's home will be created in the default folder
+# * if group_name_or_id is nil then the users default group will be used
+# * last two elements of the array are optional
+#
+default["env"]["users"] = [ ]
+
+# Override the file in which to add authorized public keys for ssh logins
+default["env"]["authorized_keys_file"] = "authorized_keys"

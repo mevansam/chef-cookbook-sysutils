@@ -191,13 +191,46 @@ if node["env"]["packages"].has_key?(platform_family)
     end
 end
 
-# Create additional groups
+# Create additional groups and users
 
-user_groups = node["env"]["user_groups"]
-if !user_groups.nil? &&
-    !user_groups.empty?
+groups = node["env"]["groups"]
+if !groups.nil? &&
+    !groups.empty?
 
-    user_groups.each do |g|
+    groups.each do |g|
         group g
+    end
+end
+
+authorized_keys_file = node["env"]["authorized_keys_file"]
+users = node["env"]["users"]
+if !users.nil? &&
+    !users.empty?
+
+    users.each do |u|
+
+        if !u.kind_of?(Array) || u.size < 4
+            Chef::Application.fatal!("default[env][users] must be an array of [ user_name, group_name_or_id, home_dir, is_passwordless_sudo ]", 999)
+        end
+
+        user u[0] do
+            supports :manage_home => true
+            home u[1]
+            gid u[2] 
+        end
+
+        if u[3]
+            sudo u[0] do
+                user u[0]
+                nopasswd true
+                defaults [ '!requiretty' ]
+            end
+        end
+
+        osenv_user_certs u[0] do
+            cert_data (u.size==6 ? u[5] : nil)
+            authorized_keys (u.size==5 ? u[4] : nil)
+            authorized_keys_file authorized_keys_file
+        end
     end
 end

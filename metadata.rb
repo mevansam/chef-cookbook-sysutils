@@ -8,3 +8,4 @@ version          '1.0.0'
 
 depends          'apt', '~> 2.4.0'
 depends          'yum', '~> 3.2.2'
+depends          'sudo', '~> 2.6.0'

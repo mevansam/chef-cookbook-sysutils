@@ -120,9 +120,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             ]
           ]
         },
-        user_certs: [ ],
-        other_certs: [ ],
-        known_hosts: [ ]
+        groups: [
+          "osenv"
+        ],
+        users: [ 
+          [ "osenvtest", "/osenv", nil, true ]
+        ],
+        encryption_key: "1234"
       }
     }
 
