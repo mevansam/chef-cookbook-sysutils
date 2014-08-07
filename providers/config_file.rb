@@ -35,6 +35,15 @@ action :add do
             write_config_file_data(file_data)
         end
     end
+
+    if !new_resource.owner.nil?
+        file new_resource.name do
+            owner new_resource.owner
+            group new_resource.group
+            mode "0644"
+            action :touch
+        end
+    end
 end
 
 action :remove do

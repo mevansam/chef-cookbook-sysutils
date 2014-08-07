@@ -20,6 +20,8 @@
 actions :add, :remove
 default_action :add
 
+attribute :owner, :kind_of => String, :default => nil
+attribute :group, :kind_of => String, :default => nil
 attribute :values, :kind_of => Array, :required => true
 attribute :format_in, :kind_of => Regexp, :required => true
 attribute :format_out, :kind_of => String, :required => true

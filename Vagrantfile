@@ -131,7 +131,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     }
 
     chef.run_list = [
-        "recipe[osenv::default]"
+        "recipe[osenv::test]"
     ]
   end
 end

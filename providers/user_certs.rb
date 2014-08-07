@@ -39,11 +39,11 @@ action :add do
 		end
 	end
 
-	#Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[cert_data]: #{cert_data}")
-	#Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[other_cert_data]: #{other_cert_data}")
-	#Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[authorized_keys]: #{authorized_keys}")
+	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[cert_data]: #{cert_data}")
+	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[other_cert_data]: #{other_cert_data}")
+	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[authorized_keys]: #{authorized_keys}")
 
-	authorized_keys_file = new_resource.authorized_keys_file
+	authorized_keys_file_name = new_resource.authorized_keys_file
 	known_hosts = new_resource.known_hosts
 
 	user_home = `echo ~#{user}`.split[0]
@@ -52,6 +52,7 @@ action :add do
         ssh_dir = user_home + "/.ssh/"
         id_rsa_file = ssh_dir + "id_rsa"
         known_hosts_file = ssh_dir + "known_hosts"
+        authorized_keys_file = ssh_dir + authorized_keys_file_name
         
         group = `groups #{user}`.split[2]
         
@@ -66,22 +67,13 @@ action :add do
         r.group group
         r.mode 0400
         r.run_action(:create)
-        
-        other_cert_data.each do |other_cert|
-            r = Chef::Resource::File.new(ssh_dir + other_cert["name"], @run_context)
-            r.content other_cert["data"]
-            r.owner user
-            r.group group
-            r.mode 0400
-            r.run_action(:create)
-        end
-        
+
         r = Chef::Resource::File.new(known_hosts_file, @run_context)
         r.owner user
         r.group group
         r.not_if { ::File.exists?(known_hosts_file) }
         r.run_action(:create)
-        
+
         r = Chef::Resource::RubyBlock.new("update known hosts", @run_context)
         r.block do
             hosts = Set.new
@@ -101,12 +93,37 @@ action :add do
         end
         r.run_action(:create)
 
+        ssh_configs = [ ]
+        other_cert_data.each do |other_cert|
+            key_file = ssh_dir + other_cert["name"]
+            r = Chef::Resource::File.new(key_file, @run_context)
+            r.content other_cert["data"]
+            r.owner user
+            r.group group
+            r.mode 0400
+            r.run_action(:create)
+
+            ssh_configs << [ other_cert["host"], key_file ] if other_cert.has_key?("host")
+        end
+
+        template "#{ssh_dir}config" do
+            source "ssh_config.erb"
+            owner user
+            group group
+            mode "0644"
+            variables(
+                :ssh_configs => ssh_configs
+            )
+        end
+
         public_keys = [ ]
         authorized_keys.each do |authorized_key|
         	public_keys << [ authorized_key ]
         end
 
-		osenv_config_file "#{ssh_dir}#{authorized_keys_file}" do
+		osenv_config_file authorized_keys_file do
+            owner user
+            group group
 		    values public_keys
 		    format_in Regexp.new('(.*)')
 		    format_out "%s"
