@@ -48,8 +48,13 @@ action :install do
         user "root"
         cwd "/tmp"
         code <<-EOH
-            sed -i '/proxy_inits.sh/d' /etc/bash.bashrc
-            sed -i '1i [ -r /etc/profile.d/proxy_inits.sh ] && source /etc/profile.d/proxy_inits.sh' /etc/bash.bashrc
+            if [ -e /etc/bashrc ]; then
+                sed -i '/proxy_inits.sh/d' /etc/bashrc
+                sed -i '2i [ -r /etc/profile.d/proxy_inits.sh ] && source /etc/profile.d/proxy_inits.sh' /etc/bashrc
+            elif [ -e /etc/bash.bashrc ]; then
+                sed -i '/proxy_inits.sh/d' /etc/bash.bashrc
+                sed -i '2i [ -r /etc/profile.d/proxy_inits.sh ] && source /etc/profile.d/proxy_inits.sh' /etc/bash.bashrc
+            end            
         EOH
     end
     
