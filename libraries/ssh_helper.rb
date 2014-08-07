@@ -50,18 +50,27 @@ module OSEnv
                 ssh = create_ssh_session()
                 ssh.exec!("rm -fr #{dest}") if clean
                 ssh.scp.upload!(src, dest, :recursive => true, :verbose => verbose)
+            ensure
                 ssh.close
             end
 
-            def execute(cmd, env = {}, src = nil, dest = nil, sudo = false, clean = false, verbose = false)
+            def execute(cmd)
 
-            	Chef::Log.debug("Executing remote command on host #{@host}: #{cmd}")
-                
-                output = StringIO.new
+                Chef::Log.debug("Executing remote command on host #{@host}: #{cmd}")
                 ssh = create_ssh_session()
-                copy(src, dest, clean, verbose) if !src.nil? && !dest.nil?
+                result = ssh.exec!(cmd)
+            ensure
+                ssh.close
+            end
+
+            def execute_ex(cmd, env = {}, src = nil, dest = nil, sudo = false, clean = false, verbose = false)
                 
                 unless cmd.nil? || cmd.empty?
+
+                    Chef::Log.debug("Executing remote command on host #{@host}: #{cmd}")
+                    
+                    output = StringIO.new
+                    copy(src, dest, clean, verbose) if !src.nil? && !dest.nil?
                     
                     environment = env.map { |k,v| "export #{k}=#{v}" }.join("; ")
                     environment += ";" if environment.length > 0
@@ -77,30 +86,34 @@ module OSEnv
                         cmd = "#{environment}#{cmd}"
                     end
 
-                    channel = ssh.open_channel do |ch|
-                        
-                        ch.request_pty do |_, success1|
-                            Chef::Application.fatal!("Could not execute command #{command} on remote host #{@primary_hostname}", 999) unless success1
+                    ssh = create_ssh_session()
+                    begin
+                        channel = ssh.open_channel do |ch|
                             
-                            ch.exec(cmd) do |_, success2|
+                            ch.request_pty do |_, success1|
+                                Chef::Application.fatal!("Could not execute command #{command} on remote host #{@primary_hostname}", 999) unless success1
                                 
-                                Chef::Application.fatal!("Could not execute command #{command} on remote host #{@primary_hostname}", 999) unless success2
-                                
-                                ch.on_data do |_, data|
-                                    output.print(data)
-                                    data.split("\n").each { |line| puts "#{@host}: #{line}" } if verbose
-                                end
+                                ch.exec(cmd) do |_, success2|
+                                    
+                                    Chef::Application.fatal!("Could not execute command #{command} on remote host #{@primary_hostname}", 999) unless success2
+                                    
+                                    ch.on_data do |_, data|
+                                        output.print(data)
+                                        data.split("\n").each { |line| puts "#{@host}: #{line}" } if verbose
+                                    end
 
-                                ch.on_extended_data do |_, _, data|
-                                    output.print(data)
-                                    data.split("\n").each { |line| puts "#{@host}: #{line}" } if verbose
+                                    ch.on_extended_data do |_, _, data|
+                                        output.print(data)
+                                        data.split("\n").each { |line| puts "#{@host}: #{line}" } if verbose
+                                    end
                                 end
                             end
                         end
+                        channel.wait
+                    ensure
+                        ssh.close
                     end
-                    channel.wait
-                    ssh.close
-                    
+
                     result = "#{output.string}"
                     return result
                 end
