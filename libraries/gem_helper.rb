@@ -1,4 +1,4 @@
-# Copyright 2013, Copyright (c) 2012-2012 Fidelity Investments.
+# Copyright 2014, Copyright (c) 2012-2012 Fidelity Investments.
 
 require 'rubygems'
 require 'rubygems/dependency_installer'

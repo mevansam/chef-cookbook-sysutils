@@ -1,9 +1,9 @@
 #
 # Author:: Mevan Samaratunga (<mevansam@gmail.com>)
-# Cookbook Name:: osenv
+# Cookbook Name:: sysutils
 # Provider: user_certs
 #
-# Copyright 2013, Mevan Samaratunga
+# Copyright 2014, Mevan Samaratunga
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ action :add do
         	public_keys << [ authorized_key ]
         end
 
-		osenv_config_file authorized_keys_file do
+		sysutils_config_file authorized_keys_file do
             owner user
             group group
 		    values public_keys

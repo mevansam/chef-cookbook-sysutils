@@ -1,4 +1,4 @@
-# osenv-cookbook
+# sysutils-cookbook
 
 TODO: Enter the cookbook description here.
 
@@ -16,7 +16,7 @@ TODO: List your supported platforms.
     <th>Default</th>
   </tr>
   <tr>
-    <td><tt>['osenv']['bacon']</tt></td>
+    <td><tt>['sysutils']['bacon']</tt></td>
     <td>Boolean</td>
     <td>whether to include bacon</td>
     <td><tt>true</tt></td>
@@ -25,14 +25,14 @@ TODO: List your supported platforms.
 
 ## Usage
 
-### osenv::default
+### sysutils::default
 
-Include `osenv` in your node's `run_list`:
+Include `sysutils` in your node's `run_list`:
 
 ```json
 {
   "run_list": [
-    "recipe[osenv::default]"
+    "recipe[sysutils::default]"
   ]
 }
 ```

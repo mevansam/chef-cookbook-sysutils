@@ -1,9 +1,9 @@
 #
 # Author:: Mevan Samaratunga (<mevansam@gmail.com>)
-# Cookbook Name:: osenv
+# Cookbook Name:: sysutils
 # Resource: global_proxy
 #
-# Copyright 2013, Mevan Samaratunga
+# Copyright 2014, Mevan Samaratunga
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,9 +18,14 @@
 # limitations under the License.
 
 actions :install
-default_action :install
 
 attribute :http_proxy, :kind_of => String, :required => true
 attribute :https_proxy, :kind_of => String
 attribute :ftp_proxy, :kind_of => String
 attribute :no_proxy, :kind_of => String
+
+def initialize(*args)
+	super
+	@resource_name = :global_proxy
+	@action = :install
+end

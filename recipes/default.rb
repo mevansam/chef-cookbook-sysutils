@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: osenv
+# Cookbook Name:: sysutils
 # Recipe:: default
 #
-# Copyright 2013, Copyright (c) 2012-2012 Fidelity Investments.
+# Copyright 2014, Copyright (c) 2012-2012 Fidelity Investments.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ end
 http_proxy = node["env"]["http_proxy"]
 if !http_proxy.nil? && !http_proxy.empty?
 
-    osenv_global_proxy "http proxy" do
+    sysutils_global_proxy "http proxy" do
         http_proxy http_proxy
         https_proxy node["env"]["https_proxy"]
         ftp_proxy node["env"]["ftp_proxy"]
@@ -60,7 +60,7 @@ execute "reload sysctl" do
 end
 
 unless node["env"]["sysctl_remove"].empty?
-    osenv_config_file "/etc/sysctl.conf" do
+    sysutils_config_file "/etc/sysctl.conf" do
         values node["env"]["sysctl_remove"]
         format_in Regexp.new('(\S+)\s+=\s+(.+)')
         format_out "%s = %s"
@@ -70,7 +70,7 @@ unless node["env"]["sysctl_remove"].empty?
     end
 end
 unless node["env"]["sysctl_add"].empty?
-    osenv_config_file "/etc/sysctl.conf" do
+    sysutils_config_file "/etc/sysctl.conf" do
         values node["env"]["sysctl_add"]
         format_in Regexp.new('(\S+)\s+=\s+(.+)')
         format_out "%s = %s"
@@ -83,7 +83,7 @@ end
 # Update ulimit settings
 
 unless node["env"]["ulimit_remove"].empty?
-    env_config_file "/etc/security/limits.conf" do
+    env_sysutils_config_file "/etc/security/limits.conf" do
         values node["env"]["ulimit_remove"]
         format_in Regexp.new('(\S+)\s+(\S+)\s+(\S+)\s+(\S+)')
         format_out "%-16s%-8s%-16s%s"
@@ -92,7 +92,7 @@ unless node["env"]["ulimit_remove"].empty?
     end
 end
 unless node["env"]["ulimit_add"].empty?
-    env_config_file "/etc/security/limits.conf" do
+    env_sysutils_config_file "/etc/security/limits.conf" do
         values node["env"]["ulimit_add"]
         format_in Regexp.new('(\S+)\s+(\S+)\s+(\S+)\s+(\S+)')
         format_out "%-16s%-8s%-16s%s"
@@ -109,8 +109,8 @@ if !node.attribute?("package_repos_updated") &&
 
     needs_update = false
 
-    package_repos = node.attribute?("osenv") && node["osenv"].attribute?("package_repos") ?
-        node["osenv"]["package_repos"] : [ ]
+    package_repos = node.attribute?("sysutils") && node["sysutils"].attribute?("package_repos") ?
+        node["sysutils"]["package_repos"] : [ ]
 
     node["env"]["package_repos"][platform_family].each do |repo_detail|
 
@@ -144,7 +144,7 @@ if !node.attribute?("package_repos_updated") &&
             needs_update = true
         end
     end
-    node.set['osenv']['package_repos'] = package_repos
+    node.set['sysutils']['package_repos'] = package_repos
     node.save
 
     if needs_update
@@ -230,7 +230,7 @@ if !users.nil? &&
             end
         end
 
-        osenv_user_certs u[0] do
+        sysutils_user_certs u[0] do
             cert_data (u.size==6 ? u[5] : nil)
             authorized_keys (u.size==5 ? u[4] : nil)
             authorized_keys_file authorized_keys_file

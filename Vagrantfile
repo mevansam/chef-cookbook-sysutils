@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # options are documented and commented below. For a complete reference,
   # please see the online documentation at vagrantup.com.
 
-  config.vm.hostname = "osenv-berkshelf"
+  config.vm.hostname = "sysutils-berkshelf"
 
   # Configure proxy
   config.proxy.http     = "http://http.proxy.fmr.com:8000"
@@ -80,7 +80,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     chef.chef_server_url = "https://c2c-oschef-mmk1.fmr.com"
     chef.validation_key_path = "../.chef/chef-validator.pem"
     chef.validation_client_name = "chef-validator"
-    chef.node_name = "a292082-osenv_dev"
+    chef.node_name = "a292082_sysutils_dev"
 
     chef.json = {
       env: {
@@ -121,17 +121,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           ]
         },
         groups: [
-          "osenv"
+          "sysutils"
         ],
         users: [ 
-          [ "osenvtest", "/osenv", nil, true ]
+          [ "test", "/test", nil, true ]
         ],
         encryption_key: "1234"
       }
     }
 
     chef.run_list = [
-        "recipe[osenv::default]"
+        "recipe[sysutils::default]"
     ]
   end
 end

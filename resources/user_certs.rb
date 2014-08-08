@@ -1,9 +1,9 @@
 #
 # Author:: Mevan Samaratunga (<mevansam@gmail.com>)
-# Cookbook Name:: osenv
+# Cookbook Name:: sysutils
 # Resource: user_certs
 #
-# Copyright 2013, Mevan Samaratunga
+# Copyright 2014, Mevan Samaratunga
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 # limitations under the License.
 
 actions :add, :authorize
-default_action :add
 
 attribute :cert_data, :kind_of => String, :default => nil
 attribute :other_cert_data, :kind_of => Hash, :default => { }
@@ -33,3 +32,9 @@ attribute :authorized_keys_file, :kind_of => String, :default => "authorized_key
 
 # List of know hosts whose keys will be saved
 attribute :known_hosts, :kind_of => Array,  :default => [ ]
+
+def initialize(*args)
+	super
+	@resource_name = :user_certs
+	@action = :add
+end

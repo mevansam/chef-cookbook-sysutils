@@ -1,8 +1,8 @@
-name             'osenv'
+name             'sysutils'
 maintainer       'Mevan Samaratunga'
 maintainer_email 'mevan.samaratunga@fmr.com'
 license          'All rights reserved'
-description      'Installs/Configures osenv'
+description      'Installs/Configures sysutils'
 long_description 'Resources for common environment configurations such as sysctl, users, groups, ssh keys, etc.'
 version          '1.0.0'
 

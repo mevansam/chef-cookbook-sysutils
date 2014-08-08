@@ -1,9 +1,9 @@
 #
 # Author:: Mevan Samaratunga (<mevansam@gmail.com>)
-# Cookbook Name:: osenv
+# Cookbook Name:: sysutils
 # Resource: config_file
 #
-# Copyright 2013, Mevan Samaratunga
+# Copyright 2014, Mevan Samaratunga
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 # limitations under the License.
 
 actions :add, :remove
-default_action :add
 
 attribute :owner, :kind_of => String, :default => nil
 attribute :group, :kind_of => String, :default => nil
@@ -27,3 +26,9 @@ attribute :format_in, :kind_of => Regexp, :required => true
 attribute :format_out, :kind_of => String, :required => true
 attribute :daemon_config_dir, :kind_of => String
 attribute :comment_format, :kind_of => String, :default => "#"
+
+def initialize(*args)
+	super
+	@resource_name = :config_file
+	@action = :add
+end

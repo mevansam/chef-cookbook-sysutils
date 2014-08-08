@@ -1,9 +1,9 @@
 #
 # Author:: Mevan Samaratunga (<mevansam@gmail.com>)
-# Cookbook Name:: osenv
+# Cookbook Name:: sysutils
 # Provider: config_file
 #
-# Copyright 2013, Mevan Samaratunga
+# Copyright 2014, Mevan Samaratunga
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

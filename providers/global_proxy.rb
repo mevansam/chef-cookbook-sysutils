@@ -1,9 +1,9 @@
 #
 # Author:: Mevan Samaratunga (<mevansam@gmail.com>)
-# Cookbook Name:: osenv
+# Cookbook Name:: sysutils
 # Provider: global_proxy
 #
-# Copyright 2013, Mevan Samaratunga
+# Copyright 2014, Mevan Samaratunga
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ action :install do
     case
         when platform_family?("rhel", "fedora")
 
-            osenv_config_file "/etc/yum.conf" do
+            sysutils_config_file "/etc/yum.conf" do
                 values [ 
                     [ "proxy", http_proxy ]
                 ]
@@ -72,7 +72,7 @@ action :install do
 
         when platform_family?("debian")
 
-            osenv_config_file "/etc/apt/apt.conf.d/01proxy" do
+            sysutils_config_file "/etc/apt/apt.conf.d/01proxy" do
                 values [ 
                     [ "Acquire::http::Proxy", http_proxy ], 
                     [ "Acquire::https::Proxy", https_proxy ], 

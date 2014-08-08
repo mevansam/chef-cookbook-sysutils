@@ -1,6 +1,6 @@
 # 0.1.0
 
-Initial release of osenv
+Initial release of sysutils
 
 * Enhancements
   * an enhancement
