@@ -3,7 +3,7 @@ maintainer       'Mevan Samaratunga'
 maintainer_email 'mevan.samaratunga@fmr.com'
 license          'All rights reserved'
 description      'Installs/Configures osenv'
-long_description 'Installs/Configures osenv'
+long_description 'Resources for common environment configurations such as sysctl, users, groups, ssh keys, etc.'
 version          '1.0.0'
 
 depends          'apt', '~> 2.4.0'
