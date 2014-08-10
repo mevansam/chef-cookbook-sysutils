@@ -103,7 +103,11 @@ action :add do
             r.mode 0400
             r.run_action(:create)
 
-            ssh_configs << [ other_cert["host"], key_file ] if other_cert.has_key?("host")
+            if other_cert.has_key?("hosts")
+                other_cert["hosts"].each do |host|
+                    ssh_configs << [ host, key_file ]
+                end
+            end
         end
 
         template "#{ssh_dir}config" do

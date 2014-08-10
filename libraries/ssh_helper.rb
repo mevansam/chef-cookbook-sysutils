@@ -1,4 +1,4 @@
-# Copyright 2014, Copyright (c) 2012-2012 Fidelity Investments.
+# Copyright (c) 2014 Fidelity Investments.
 
 install_gem("net-ssh") if !gem_installed?("net-ssh")
 require "net/ssh"
