@@ -31,7 +31,7 @@ action :add do
 
 	encryption_key = node["env"]["encryption_key"]
 	if !encryption_key.nil?
-		user_data = Chef::EncryptedDataBagItem.load(new_resource.data_bag, user, encryption_key)
+		user_data = Chef::EncryptedDataBagItem.load(new_resource.data_bag, "#{user}.#{node.chef_environment}", encryption_key)
 		if !user_data.nil?
 			cert_data = user_data["cert_data"] if user_data["cert_data"]
 			other_cert_data = user_data["other_cert_data"] if user_data["other_cert_data"]
