@@ -37,7 +37,8 @@ platform_family = node['platform_family']
 	    unless ENV[proxy_config] || ENV[proxy_config.upcase]
 	        ENV[proxy_config] = ENV[proxy_config.upcase] = Chef::Config[proxy_config]
 	    end
-        node.default["env"][proxy_config] = "value"
+        node.set["env"][proxy_config] = "value"
+        node.save
 	end
 end
 
