@@ -78,7 +78,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     chef.arguments = "-l debug"
     chef.chef_server_url = "https://c2c-oschef-mmk1.fmr.com"
-    chef.validation_key_path = "../.chef/chef-validator.pem"
+    chef.validation_key_path = "../../../.chef/chef-validator.pem"
     chef.validation_client_name = "chef-validator"
     chef.node_name = "a292082_sysutils_dev"
 
