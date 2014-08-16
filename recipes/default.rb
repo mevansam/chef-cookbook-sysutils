@@ -44,12 +44,15 @@ end
         !node["env"][proxy_config].nil? && 
         !node["env"][proxy_config].empty?
 
-		ENV[proxy_config] = ENV[proxy_config.upcase] = node["env"][proxy_config]
-	elsif !Chef::Config[proxy_config]
+		Chef::Config[proxy_config] = ENV[proxy_config] = ENV[proxy_config.upcase] = node["env"][proxy_config]
+        
+	elsif !Chef::Config[proxy_config].nil? && 
+        !Chef::Config[proxy_config].empty?
+
 	    unless ENV[proxy_config] || ENV[proxy_config.upcase]
 	        ENV[proxy_config] = ENV[proxy_config.upcase] = Chef::Config[proxy_config]
 	    end
-        node.set["env"][proxy_config] = "value"
+        node.set["env"][proxy_config] = Chef::Config[proxy_config]
         node.save
 	end
 end
