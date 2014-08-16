@@ -65,6 +65,38 @@ if !http_proxy.nil? && !http_proxy.empty?
     end
 end
 
+# Check if extra storage was provided and if it was format and mount it
+if node["env"].has_key?("data_disk") && !node["env"]["data_disk"].empty? &&
+    node["env"].has_key?("data_path") && !node["env"]["data_path"].empty?
+
+    data_disk = node["env"]["data_disk"]
+    data_path = node["env"]["data_path"]
+
+    script "prepare data disk" do
+        interpreter "bash"
+        user "root"
+        cwd "/tmp"
+        code <<-EOH
+
+            if [ -n "$(lsblk | grep #{data_disk.split("/").last})" ] && \
+                [ -z "$(blkid | grep #{data_disk})"]; then
+
+                echo "**** Formating data disk #{data_disk} with ext4 file system..."
+                mkfs.ext4 #{data_disk}
+                if [ $? -eq 0 ]; then
+                    mkdir -p #{data_path}
+                fi
+            fi
+        EOH
+    end
+
+    mount data_path do
+        device data_disk
+        fstype "ext4"
+        action [:mount, :enable]
+    end
+end
+
 # Update sysctl settings
 
 execute "reload sysctl" do
