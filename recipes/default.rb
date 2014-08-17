@@ -45,7 +45,7 @@ end
         !node["env"][proxy_config].empty?
 
 		Chef::Config[proxy_config] = ENV[proxy_config] = ENV[proxy_config.upcase] = node["env"][proxy_config]
-        
+
 	elsif !Chef::Config[proxy_config].nil? && 
         !Chef::Config[proxy_config].empty?
 
@@ -69,8 +69,9 @@ if !http_proxy.nil? && !http_proxy.empty?
 end
 
 # Check if extra storage was provided and if it was format and mount it
-if node["env"].has_key?("data_disk") && !node["env"]["data_disk"].empty? &&
-    node["env"].has_key?("data_path") && !node["env"]["data_path"].empty?
+
+if node["env"].has_key?("data_disk") && !node["env"]["data_disk"].nil? && !node["env"]["data_disk"].empty? &&
+    node["env"].has_key?("data_path") && !node["env"]["data_path"].nil? && !node["env"]["data_path"].empty?
 
     data_disk = node["env"]["data_disk"]
     data_path = node["env"]["data_path"]
@@ -146,6 +147,33 @@ unless node["env"]["ulimit_add"].empty?
         format_out "%-16s%-8s%-16s%s"
         daemon_config_dir "/etc/security/limits.d"
         action :add
+    end
+end
+
+# Enable/Disable firewall
+
+if !node["env"]["firewall"].nil?
+
+    if !node["env"]["firewall"]
+
+        case platform_family
+
+            when "fedora", "rhel"
+                script "disable firewall" do
+                    interpreter "bash"
+                    user "root"
+                    code <<-EOH
+                        service iptables save
+                        service iptables stop
+                        chkconfig iptables off
+                    EOH
+                end
+
+            when "debian"
+                if platform?("ubuntu")
+                    execute '[ -n "$(ufw status | grep inactive)" ] || (ufw disable)' 
+                end
+        end
     end
 end
 

@@ -5,11 +5,18 @@ default["env"]["https_proxy"] = nil
 default["env"]["ftp_proxy"] = nil
 default["env"]["no_proxy"] = nil
 
+# Additional block storage to allocate as a data disk
+default["env"]["data_disk"] = nil
+default["env"]["data_path"] = nil
+
 default["env"]["sysctl_add"] = [ ]
 default["env"]["sysctl_remove"] = [ ]
 
 default["env"]["ulimit_add"] = [ ]
 default["env"]["ulimit_remove"] = [ ]
+
+# Enable/Disable local firewall
+default["env"]["firewall"] = true
 
 default["env"]["package_repos"]["rhel"] = [ ]
 
