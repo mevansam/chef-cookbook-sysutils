@@ -46,3 +46,26 @@ default["env"]["users"] = [ ]
 
 # Override the file in which to add authorized public keys for ssh logins
 default["env"]["authorized_keys_file"] = "authorized_keys"
+
+# This is an array for arrays of clusters. If this current 
+# server is in one of these clusters then it will be added
+# to that pacemaker cluster. All pacemaker configuration
+# will be done using the unicast protocol.
+#
+# example:
+#
+#   * note: if use_mcast is true then members will be ignored. This
+#           assumes that your switches have multicast enabled. Otherwise
+#           the cluster will be configured to use unicast.
+#
+#   "env" => {
+#       "clusters" => {
+#           "haproxy" => {
+#               "members" => [ 10.1.1.1, 10.1.1.2, 10.1.1.3 ],
+#               "use_mcast" => true,
+#               "mcast_address" => "239.255.42.1",
+#               "mcast_port" => 5405
+#       }
+#   }
+#
+default["env"]["clusters"] = [ ]
