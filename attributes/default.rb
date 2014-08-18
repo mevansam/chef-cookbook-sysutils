@@ -56,16 +56,15 @@ default["env"]["authorized_keys_file"] = "authorized_keys"
 #
 #   * note: if use_mcast is true then members will be ignored. This
 #           assumes that your switches have multicast enabled. Otherwise
-#           the cluster will be configured to use unicast.
+#           the cluster will be configured to use unicast. If using 
+#           multicast then mcast_address and mcast_port must be provided.
 #
-#   "env" => {
-#       "clusters" => {
-#           "haproxy" => {
-#               "members" => [ 10.1.1.1, 10.1.1.2, 10.1.1.3 ],
-#               "use_mcast" => true,
-#               "mcast_address" => "239.255.42.1",
-#               "mcast_port" => 5405
-#       }
+#   "clusters" => {
+#       "haproxy" => {
+#           "use_mcast" => false,
+#           "members" => [ [ '10.1.1.1', 'host1.acme.com', 'host1' ], [ '10.1.1.2', 'host2.acme.com', 'host2' ]  ],
+#           "mcast_address" => "239.255.42.1",
+#           "mcast_port" => 5405
 #   }
 #
-default["env"]["clusters"] = [ ]
+default["clusters"] = { }
