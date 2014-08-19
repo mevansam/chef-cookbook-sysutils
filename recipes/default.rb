@@ -19,18 +19,6 @@
 
 platform_family = node['platform_family']
 
-# Save encryption key if provided
-encryption_key = node["env"]["encryption_key"]
-if !encryption_key.nil? && encryption_key.length > 0
-    
-    file "/etc/chef/encrypted_data_bag_secret" do
-        owner "root"
-        group "root"
-        mode "0400"
-        content encryption_key
-    end
-end
-
 # Set up proxies if provided
 ["http_proxy", "https_proxy", "no_proxy"].each do |proxy_config|
 

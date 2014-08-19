@@ -1,5 +1,7 @@
 # Copyright (c) 2014 Fidelity Investments.
 
+default["env"]["secret_file_path"] = nil
+
 default["env"]["http_proxy"] = nil
 default["env"]["https_proxy"] = nil
 default["env"]["ftp_proxy"] = nil

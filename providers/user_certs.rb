@@ -29,7 +29,7 @@ action :add do
 	other_cert_data = new_resource.other_cert_data
 	authorized_keys = new_resource.authorized_keys
 
-	encryption_key = node["env"]["encryption_key"]
+	encryption_key = get_encryption_secret
 	if !encryption_key.nil?
 		user_data = Chef::EncryptedDataBagItem.load("#{new_resource.data_bag}-#{node.chef_environment}", "#{user}", encryption_key)
 		if !user_data.nil?
