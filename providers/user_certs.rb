@@ -31,111 +31,118 @@ action :add do
 
 	encryption_key = get_encryption_secret
 	if !encryption_key.nil?
-		user_data = Chef::EncryptedDataBagItem.load("#{new_resource.data_bag}-#{node.chef_environment}", "#{user}", encryption_key)
-		if !user_data.nil?
-			cert_data = user_data["cert_data"] if user_data["cert_data"]
-			other_cert_data = user_data["other_cert_data"] if user_data["other_cert_data"]
-			authorized_keys = user_data["authorized_keys"] if user_data["authorized_keys"]
-		end
+        begin
+    		user_data = Chef::EncryptedDataBagItem.load("#{new_resource.data_bag}-#{node.chef_environment}", "#{user}", encryption_key)
+    		if !user_data.nil?
+    			cert_data = user_data["cert_data"] if user_data["cert_data"]
+    			other_cert_data = user_data["other_cert_data"] if user_data["other_cert_data"]
+    			authorized_keys = user_data["authorized_keys"] if user_data["authorized_keys"]
+    		end
+        rescue
+            Chef::Log.info("No encrypted data bag with certificate details found for user '#{user}'.")
+        end
 	end
 
-	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[cert_data]: #{cert_data}")
-	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[other_cert_data]: #{other_cert_data}")
-	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[authorized_keys]: #{authorized_keys}")
+    if !cert_data.nil? || !other_cert_data.size==0 || !authorized_keys.size==0
 
-	authorized_keys_file_name = new_resource.authorized_keys_file
-	known_hosts = new_resource.known_hosts
+    	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[cert_data]: #{cert_data}")
+    	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[other_cert_data]: #{other_cert_data}")
+    	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[authorized_keys]: #{authorized_keys}")
 
-	user_home = `echo ~#{user}`.split[0]
-    if ::Dir.exists?(user_home)
-        
-        ssh_dir = user_home + "/.ssh/"
-        id_rsa_file = ssh_dir + "id_rsa"
-        known_hosts_file = ssh_dir + "known_hosts"
-        authorized_keys_file = ssh_dir + authorized_keys_file_name
-        
-        group = `groups #{user}`.split[2]
-        
-        r = Chef::Resource::Directory.new(ssh_dir, @run_context)
-        r.owner user
-        r.group group
-        r.run_action(:create)
-        
-        r = Chef::Resource::File.new(id_rsa_file, @run_context)
-        r.content cert_data
-        r.owner user
-        r.group group
-        r.mode 0400
-        r.run_action(:create)
+    	authorized_keys_file_name = new_resource.authorized_keys_file
+    	known_hosts = new_resource.known_hosts
 
-        r = Chef::Resource::File.new(known_hosts_file, @run_context)
-        r.owner user
-        r.group group
-        r.not_if { ::File.exists?(known_hosts_file) }
-        r.run_action(:create)
-
-        r = Chef::Resource::RubyBlock.new("update known hosts", @run_context)
-        r.block do
-            hosts = Set.new
-            ::IO.readlines(known_hosts_file).each do |known_host|
-                host_fields = known_host.split(/,|\s+/)
-                hosts << host_fields[0]
-                hosts << host_fields[1]
-            end
-            ::File.open(known_hosts_file, 'a') do |file|
-                known_hosts.each do |host|
-                    unless hosts.include?(host)
-                        Chef::Log.debug("Adding host \"#{host}\" to \"#{known_hosts_file}\".")
-                        file.write(`ssh-keyscan -t rsa #{host}`)
-                    end
-                end
-            end
-        end
-        r.run_action(:create)
-
-        ssh_configs = [ ]
-        other_cert_data.each do |other_cert|
-            key_file = ssh_dir + other_cert["name"]
-            r = Chef::Resource::File.new(key_file, @run_context)
-            r.content other_cert["data"]
+    	user_home = `echo ~#{user}`.split[0]
+        if ::Dir.exists?(user_home)
+            
+            ssh_dir = user_home + "/.ssh/"
+            id_rsa_file = ssh_dir + "id_rsa"
+            known_hosts_file = ssh_dir + "known_hosts"
+            authorized_keys_file = ssh_dir + authorized_keys_file_name
+            
+            group = `groups #{user}`.split[2]
+            
+            r = Chef::Resource::Directory.new(ssh_dir, @run_context)
+            r.owner user
+            r.group group
+            r.run_action(:create)
+            
+            r = Chef::Resource::File.new(id_rsa_file, @run_context)
+            r.content cert_data
             r.owner user
             r.group group
             r.mode 0400
             r.run_action(:create)
 
-            if other_cert.has_key?("hosts")
-                other_cert["hosts"].each do |host|
-                    ssh_configs << [ host, key_file ]
+            r = Chef::Resource::File.new(known_hosts_file, @run_context)
+            r.owner user
+            r.group group
+            r.not_if { ::File.exists?(known_hosts_file) }
+            r.run_action(:create)
+
+            r = Chef::Resource::RubyBlock.new("update known hosts", @run_context)
+            r.block do
+                hosts = Set.new
+                ::IO.readlines(known_hosts_file).each do |known_host|
+                    host_fields = known_host.split(/,|\s+/)
+                    hosts << host_fields[0]
+                    hosts << host_fields[1]
+                end
+                ::File.open(known_hosts_file, 'a') do |file|
+                    known_hosts.each do |host|
+                        unless hosts.include?(host)
+                            Chef::Log.debug("Adding host \"#{host}\" to \"#{known_hosts_file}\".")
+                            file.write(`ssh-keyscan -t rsa #{host}`)
+                        end
+                    end
                 end
             end
-        end
+            r.run_action(:create)
 
-        template "#{ssh_dir}config" do
-            source "ssh_config.erb"
-            owner user
-            group group
-            mode "0644"
-            variables(
-                :ssh_configs => ssh_configs
-            )
-        end
+            ssh_configs = [ ]
+            other_cert_data.each do |other_cert|
+                key_file = ssh_dir + other_cert["name"]
+                r = Chef::Resource::File.new(key_file, @run_context)
+                r.content other_cert["data"]
+                r.owner user
+                r.group group
+                r.mode 0400
+                r.run_action(:create)
 
-        public_keys = [ ]
-        authorized_keys.each do |authorized_key|
-        	public_keys << [ authorized_key ]
-        end
+                if other_cert.has_key?("hosts")
+                    other_cert["hosts"].each do |host|
+                        ssh_configs << [ host, key_file ]
+                    end
+                end
+            end
 
-		sysutils_config_file authorized_keys_file do
-            owner user
-            group group
-		    values public_keys
-		    format_in Regexp.new('(.*)')
-		    format_out "%s"
-		    action :add
-		end
-    else
-        Chef::Log.warn("User \"#{user}\" does not exist or does not have a home directory.")
-    end	
+            template "#{ssh_dir}config" do
+                source "ssh_config.erb"
+                owner user
+                group group
+                mode "0644"
+                variables(
+                    :ssh_configs => ssh_configs
+                )
+            end
+
+            public_keys = [ ]
+            authorized_keys.each do |authorized_key|
+            	public_keys << [ authorized_key ]
+            end
+
+    		sysutils_config_file authorized_keys_file do
+                owner user
+                group group
+    		    values public_keys
+    		    format_in Regexp.new('(.*)')
+    		    format_out "%s"
+    		    action :add
+    		end
+        else
+            Chef::Log.warn("User \"#{user}\" does not exist or does not have a home directory.")
+        end	
+    end
 end
 
 action :authorize do
