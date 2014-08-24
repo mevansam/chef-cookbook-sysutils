@@ -252,6 +252,9 @@ if node["env"]["packages"].has_key?(platform_family)
     end
 end
 
+node["env"]["packages"]["pip"].each \
+    { |pkg| execute "pip install #{pkg}" } if node["env"]["packages"].has_key?("pip")
+
 # Create additional groups and users
 
 groups = node["env"]["groups"]
