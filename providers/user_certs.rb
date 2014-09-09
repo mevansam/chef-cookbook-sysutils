@@ -17,42 +17,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+class ::Chef::Provider # rubocop:disable Documentation
+    include ::SysUtils::Helper
+end
+
 def whyrun_supported?
     true
 end
 
 action :add do
 
-	user = new_resource.name
+    user = new_resource.name
 
-	cert_data = new_resource.cert_data
-	other_cert_data = new_resource.other_cert_data
-	authorized_keys = new_resource.authorized_keys
+    cert_data = new_resource.cert_data
+    other_cert_data = new_resource.other_cert_data
+    authorized_keys = new_resource.authorized_keys
 
-	encryption_key = get_encryption_secret
-	if !encryption_key.nil?
+    encryption_key = get_encryption_secret
+    if !encryption_key.nil?
         begin
-    		user_data = Chef::EncryptedDataBagItem.load("#{new_resource.data_bag}-#{node.chef_environment}", "#{user}", encryption_key)
-    		if !user_data.nil?
-    			cert_data = user_data["cert_data"] if user_data["cert_data"]
-    			other_cert_data = user_data["other_cert_data"] if user_data["other_cert_data"]
-    			authorized_keys = user_data["authorized_keys"] if user_data["authorized_keys"]
-    		end
+            user_data = Chef::EncryptedDataBagItem.load("#{new_resource.data_bag}-#{node.chef_environment}", "#{user}", encryption_key)
+            if !user_data.nil?
+                cert_data = user_data["cert_data"] if user_data["cert_data"]
+                other_cert_data = user_data["other_cert_data"] if user_data["other_cert_data"]
+                authorized_keys = user_data["authorized_keys"] if user_data["authorized_keys"]
+            end
         rescue
             Chef::Log.info("No encrypted data bag with certificate details found for user '#{user}'.")
         end
-	end
+    end
 
     if !cert_data.nil? || !other_cert_data.size==0 || !authorized_keys.size==0
 
-    	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[cert_data]: #{cert_data}")
-    	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[other_cert_data]: #{other_cert_data}")
-    	Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[authorized_keys]: #{authorized_keys}")
+        Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[cert_data]: #{cert_data}")
+        Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[other_cert_data]: #{other_cert_data}")
+        Chef::Log.debug("Contents of data bag '#{new_resource.data_bag}' item user_data[authorized_keys]: #{authorized_keys}")
 
-    	authorized_keys_file_name = new_resource.authorized_keys_file
-    	known_hosts = new_resource.known_hosts
+        authorized_keys_file_name = new_resource.authorized_keys_file
+        known_hosts = new_resource.known_hosts
 
-    	user_home = `echo ~#{user}`.split[0]
+        user_home = `echo ~#{user}`.split[0]
         if ::Dir.exists?(user_home)
             
             ssh_dir = user_home + "/.ssh/"
@@ -128,33 +132,33 @@ action :add do
 
             public_keys = [ ]
             authorized_keys.each do |authorized_key|
-            	public_keys << [ authorized_key ]
+                public_keys << [ authorized_key ]
             end
 
-    		sysutils_config_file authorized_keys_file do
+            sysutils_config_file authorized_keys_file do
                 owner user
                 group group
-    		    values public_keys
-    		    format_in Regexp.new('(.*)')
-    		    format_out "%s"
-    		    action :add
-    		end
+                values public_keys
+                format_in Regexp.new('(.*)')
+                format_out "%s"
+                action :add
+            end
         else
             Chef::Log.warn("User \"#{user}\" does not exist or does not have a home directory.")
-        end	
+        end    
     end
 end
 
 action :authorize do
 
-	user = new_resource.name
+    user = new_resource.name
 
-	cert_data = new_resource.cert_data
-	authorized_keys = new_resource.authorized_keys
+    cert_data = new_resource.cert_data
+    authorized_keys = new_resource.authorized_keys
 
-	user_data = data_bag_item(new_resource.data_bag, user)
-	if user_data.nil?
-		cert_data = user_data if user_data["cert_data"]
-		authorized_keys = user_data if user_data["authorized_keys"]
-	end
+    user_data = data_bag_item(new_resource.data_bag, user)
+    if user_data.nil?
+        cert_data = user_data if user_data["cert_data"]
+        authorized_keys = user_data if user_data["authorized_keys"]
+    end
 end

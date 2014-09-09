@@ -17,6 +17,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+class ::Chef::Provider # rubocop:disable Documentation
+    include ::SysUtils::Helper
+end
+
 def whyrun_supported?
     true
 end

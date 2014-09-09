@@ -85,10 +85,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     chef.json = {
       env: {
         http_proxy: "http://http.proxy.fmr.com:8000",
-        sysctl_add: [ ], 
-        sysctl_remove: [ ],
-        ulimit_add: [ ],
-        ulimit_remove: [ ],
+        sysctl_add: [
+            [ "kernel.core_pattern", "/apps/log/cores/core.%p" ],
+            [ "kernel.sem", "250 32000 128 2048" ],
+            [ "kernel.threads-max", "262144" ] 
+          ],
+        ulimit_add: [ 
+            [ "*", "-", "nofile", "8192" ],
+            [ "*", "-", "core", "unlimited" ],
+            [ "*", "-", "nproc", "197632"] 
+          ],
+        ulimit_remove: [
+            [ "*", "soft", "nproc", "1024" ] 
+          ],
         package_repos: {
           rhel: [ ],
           debian: [ 

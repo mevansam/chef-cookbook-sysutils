@@ -28,7 +28,7 @@ attribute :daemon_config_dir, :kind_of => String
 attribute :comment_format, :kind_of => String, :default => "#"
 
 def initialize(*args)
-	super
-	@resource_name = :config_file
-	@action = :add
+    super
+    @resource_name = :config_file
+    @action = :add
 end

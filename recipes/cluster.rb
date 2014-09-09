@@ -48,16 +48,16 @@ end
 
 if is_cluster
 
-	cluster_nodes = search(:node, "cluster_name:#{cluster_name} AND cluster_authkey:*")
+    cluster_nodes = search(:node, "cluster_name:#{cluster_name} AND cluster_authkey:*")
 
-	auth_key = nil
-	if cluster_nodes.size > 0
-		auth_key = cluster_nodes.first["cluster_authkey"]
-		node.set["cluster_authkey"] = auth_key
-	end
+    auth_key = nil
+    if cluster_nodes.size > 0
+        auth_key = cluster_nodes.first["cluster_authkey"]
+        node.set["cluster_authkey"] = auth_key
+    end
 
-	node.set["cluster_name"] = cluster_name
-	node.save
+    node.set["cluster_name"] = cluster_name
+    node.save
 
     case platform_family
         when "debian"
@@ -73,8 +73,8 @@ if is_cluster
                 interpreter "bash"
                 user "root"
                 code <<-EOH
-                	service pacemaker stop
-                	service corosync stop
+                    service pacemaker stop
+                    service corosync stop
                 EOH
             end
 
@@ -134,9 +134,9 @@ if is_cluster
 
                         Chef::Log.debug("Saved generated authorization key: #{auth_key}")
                     end
-               	end
+                   end
             else
-				is_cluster_initialized = true
+                is_cluster_initialized = true
 
                 ruby_block "saving cluster authorization key" do
                     block do
@@ -161,9 +161,9 @@ if is_cluster
                 interpreter "bash"
                 user "root"
                 code <<-EOH
-                	service corosync start
-                	sleep 10
-                	service pacemaker start
+                    service corosync start
+                    sleep 10
+                    service pacemaker start
                 EOH
             end
 

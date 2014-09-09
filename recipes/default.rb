@@ -22,21 +22,21 @@ platform_family = node['platform_family']
 # Set up proxies if provided
 ["http_proxy", "https_proxy", "no_proxy"].each do |proxy_config|
 
-	if node["env"].has_key?(proxy_config) && 
+    if node["env"].has_key?(proxy_config) && 
         !node["env"][proxy_config].nil? && 
         !node["env"][proxy_config].empty?
 
-		Chef::Config[proxy_config] = ENV[proxy_config] = ENV[proxy_config.upcase] = node["env"][proxy_config]
+        Chef::Config[proxy_config] = ENV[proxy_config] = ENV[proxy_config.upcase] = node["env"][proxy_config]
 
-	elsif !Chef::Config[proxy_config].nil? && 
+    elsif !Chef::Config[proxy_config].nil? && 
         !Chef::Config[proxy_config].empty?
 
-	    unless ENV[proxy_config] || ENV[proxy_config.upcase]
-	        ENV[proxy_config] = ENV[proxy_config.upcase] = Chef::Config[proxy_config]
-	    end
+        unless ENV[proxy_config] || ENV[proxy_config.upcase]
+            ENV[proxy_config] = ENV[proxy_config.upcase] = Chef::Config[proxy_config]
+        end
         node.set["env"][proxy_config] = Chef::Config[proxy_config]
         node.save
-	end
+    end
 end
 
 http_proxy = node["env"]["http_proxy"]
@@ -114,7 +114,7 @@ end
 # Update ulimit settings
 
 unless node["env"]["ulimit_remove"].empty?
-    env_sysutils_config_file "/etc/security/limits.conf" do
+    sysutils_config_file "/etc/security/limits.conf" do
         values node["env"]["ulimit_remove"]
         format_in Regexp.new('(\S+)\s+(\S+)\s+(\S+)\s+(\S+)')
         format_out "%-16s%-8s%-16s%s"
@@ -123,7 +123,7 @@ unless node["env"]["ulimit_remove"].empty?
     end
 end
 unless node["env"]["ulimit_add"].empty?
-    env_sysutils_config_file "/etc/security/limits.conf" do
+    sysutils_config_file "/etc/security/limits.conf" do
         values node["env"]["ulimit_add"]
         format_in Regexp.new('(\S+)\s+(\S+)\s+(\S+)\s+(\S+)')
         format_out "%-16s%-8s%-16s%s"

@@ -34,7 +34,7 @@ attribute :authorized_keys_file, :kind_of => String, :default => "authorized_key
 attribute :known_hosts, :kind_of => Array,  :default => [ ]
 
 def initialize(*args)
-	super
-	@resource_name = :user_certs
-	@action = :add
+    super
+    @resource_name = :user_certs
+    @action = :add
 end

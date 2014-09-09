@@ -25,7 +25,7 @@ attribute :ftp_proxy, :kind_of => String
 attribute :no_proxy, :kind_of => String
 
 def initialize(*args)
-	super
-	@resource_name = :global_proxy
-	@action = :install
+    super
+    @resource_name = :global_proxy
+    @action = :install
 end

@@ -19,6 +19,10 @@
 
 require "fileutils"
 
+class ::Chef::Provider # rubocop:disable Documentation
+    include ::SysUtils::Helper
+end
+
 def whyrun_supported?
     true
 end
