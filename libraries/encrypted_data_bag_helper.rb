@@ -20,7 +20,7 @@ module ::SysUtils # rubocop:disable Documentation
 
     module Helper
 
-        def get_encryption_secret
+        def get_encryption_secret(node)
 
             secret_file = node["env"]["secret_file_path"]
             databag_secret_file = nil
