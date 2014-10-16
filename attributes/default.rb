@@ -1,6 +1,27 @@
-# Copyright (c) 2014 Fidelity Investments.
+
 
 default["env"]["secret_file_path"] = nil
+
+# Array of network interfaces. Each interface hash must map to an attribute
+# of the network_interface resource of the network_interface cookbook.
+# https://github.com/redguide/network_interfaces/blob/master/resources/default.rb
+#
+# example:
+#
+#   * note: Each network interface is represented as a hash of key-value pairs 
+#           which will be mapped to attributes of the network_interfaces resource.
+#
+#   "network_interfaces" => [
+#       {          
+#          device => ...
+#          .
+#          .
+#       }
+#   ]
+#
+# Currently this applies only for Ubuntu/Debian systems only
+#
+default["env"]["network_interfaces"] = [ ]
 
 default["env"]["http_proxy"] = nil
 default["env"]["https_proxy"] = nil

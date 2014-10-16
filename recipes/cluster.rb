@@ -2,10 +2,10 @@
 # Cookbook Name:: sysutils
 # Recipe:: cluster
 #
-# Copyright (c) 2014 Fidelity Investments.
+
 #
 # Author: Mevan Samaratunga
-# Email: mevan.samaratunga@fmr.com
+# Email: mevansam@gmail.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -65,8 +65,6 @@ if is_cluster
     case platform_family
         when "debian"
 
-            is_cluster_initialized = false
-
             package "pacemaker"
             package "corosync"
             package "cluster-glue"
@@ -76,8 +74,6 @@ if is_cluster
                 interpreter "bash"
                 user "root"
                 code <<-EOH
-                    service pacemaker stop
-                    service corosync stop
                 EOH
             end
 
@@ -100,28 +96,6 @@ if is_cluster
                 only_if { !File.exists?("/etc/corosync/startup.initialized") }
             end
 
-            bind_net_address = ipaddress.gsub(/\.\d+$/, '.0')
-
-            template "/etc/corosync/corosync.conf" do
-                source "corosync.conf.erb"
-                mode "0644"
-                variables(
-                    :cluster_name => cluster_name,
-                    :cluster_members => cluster_members,
-                    :bind_net_address => bind_net_address,
-                    :mcast_address => mcast_address,
-                    :mcast_port => mcast_port
-                )
-            end
-
-            template "/etc/hosts" do
-                source "cluster_node_hosts.erb"
-                mode "0644"
-                variables(
-                    :cluster_members => cluster_members
-                )
-            end
-
             if auth_key.nil? || auth_key.empty?
 
                 ruby_block "generating cluster authorization key" do
@@ -136,11 +110,11 @@ if is_cluster
                         node.save
 
                         Chef::Log.debug("Saved generated authorization key: #{auth_key}")
-                    end
-                   end
-            else
-                is_cluster_initialized = true
 
+                        resources(:script => "restart cluster node services").run_action(:run)
+                    end
+                end
+            else
                 ruby_block "saving cluster authorization key" do
                     block do
                          Chef::Log.debug("Using authorization key: #{auth_key}")
@@ -149,6 +123,7 @@ if is_cluster
                         system 'chmod 0400 /etc/corosync/authkey'
                     end
                     action :nothing
+                    notifies :run, "script[restart cluster node services]"
                 end
 
                 file "/etc/corosync/authkey.hex" do
@@ -156,34 +131,44 @@ if is_cluster
                     group "root"
                     mode "0400"
                     content auth_key
-                    notifies :create, resources(:ruby_block => "saving cluster authorization key"), :immediately
+                    notifies :create, "ruby_block[saving cluster authorization key]", :immediately
                 end
             end
 
-            script "start cluster node services" do
+            bind_net_address = ipaddress.gsub(/\.\d+$/, '.0')
+            template "/etc/corosync/corosync.conf" do
+                source "corosync.conf.erb"
+                mode "0644"
+                variables(
+                    :cluster_name => cluster_name,
+                    :cluster_members => cluster_members,
+                    :bind_net_address => bind_net_address,
+                    :mcast_address => mcast_address,
+                    :mcast_port => mcast_port
+                )
+                notifies :run, "script[restart cluster node services]"
+            end
+
+            template "/etc/hosts" do
+                source "cluster_node_hosts.erb"
+                mode "0644"
+                variables(
+                    :cluster_members => cluster_members
+                )
+                notifies :run, "script[restart cluster node services]"
+            end
+
+            script "restart cluster node services" do
                 interpreter "bash"
                 user "root"
                 code <<-EOH
+                    service pacemaker stop
+                    service corosync stop
                     service corosync start
                     sleep 10
                     service pacemaker start
                 EOH
-            end
-
-            if !is_cluster_initialized
-
-                script "configure crm" do
-                    interpreter "bash"
-                    user "root"
-                    code <<-EOH
-                        crm configure property stonith-enabled="false"
-                        crm configure property no-quorum-policy="ignore"
-                        crm configure property pe-warn-series-max="1000"
-                        crm configure property pe-input-series-max="1000"
-                        crm configure property pe-error-series-max="1000"
-                        crm configure property cluster-recheck-interval="5min"
-                    EOH
-                end                
+                action :nothing
             end
         else
             Chef::Application.fatal!("Clustering is not supported on the \"#{platform_family}\" family of platforms.", 999)

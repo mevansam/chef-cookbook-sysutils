@@ -1,7 +1,7 @@
-# Copyright (c) 2014 Fidelity Investments.
+
 #
 # Author: Mevan Samaratunga
-# Email: mevan.samaratunga@fmr.com
+# Email: mevansam@gmail.com
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,11 +44,11 @@ module ::SysUtils # rubocop:disable Documentation
             end
         end
 
-        def shell(cmd)
+        def shell(cmd, ignore_error = false)
             Chef::Log.debug("Executing shell command: #{cmd}")
             sh = Mixlib::ShellOut.new(cmd)
             sh.run_command
-            sh.error!
+            sh.error! if !ignore_error
             return sh.stdout.chomp
         end
 
@@ -56,7 +56,7 @@ module ::SysUtils # rubocop:disable Documentation
             Chef::Log.debug("Executing shell command: #{cmd}")
             sh = Mixlib::ShellOut.new(cmd)
             sh.run_command
-            sh.error! if ignore_error
+            sh.error! if !ignore_error
         end
     end
 end

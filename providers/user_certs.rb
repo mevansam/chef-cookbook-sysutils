@@ -130,19 +130,23 @@ action :add do
                 )
             end
 
-            public_keys = [ ]
-            authorized_keys.each do |authorized_key|
-                public_keys << [ authorized_key ]
-            end
+            if ::File.exists?(authorized_keys_file)
+                public_keys = ::IO.readlines(authorized_keys_file)
+                
+                authorized_keys.each do |key|
 
-            sysutils_config_file authorized_keys_file do
-                owner user
-                group group
-                values public_keys
-                format_in Regexp.new('(.*)')
-                format_out "%s"
-                action :add
+                    i = 0
+                    while (i<public_keys.size)
+                        break if public_keys[i][/(.*)\n?/, 1]==key
+                        i += 1
+                    end
+                    public_keys << "#{key}\n" if i==public_keys.size
+                end
+            else
+                public_keys = authorized_keys
             end
+            Chef::Log.info("Writing authorized_keys: #{public_keys}")
+            ::File.open(authorized_keys_file, "w") { |f| f.write(public_keys.join) }
         else
             Chef::Log.warn("User \"#{user}\" does not exist or does not have a home directory.")
         end    
