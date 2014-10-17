@@ -35,7 +35,7 @@ node["clusters"].each_pair do |name, info|
 
     members.each do |member|
 
-        if ipaddress == member[0]
+        if ipaddress==member[0]
 
             cluster_name = name
             cluster_members = members
@@ -54,13 +54,14 @@ if is_cluster
     cluster_nodes = search(:node, "cluster_name:#{cluster_name} AND cluster_authkey:*")
 
     auth_key = nil
-    if cluster_nodes.size > 0
+    if cluster_nodes.size>0
         auth_key = cluster_nodes.first["cluster_authkey"]
         node.set["cluster_authkey"] = auth_key
     end
 
-    node.set["cluster_name"] = cluster_name
-    node.save
+    initializing_node = search(:node, "cluster_name:#{cluster_name} AND cluster_initializing_node:true")
+    node.override["cluster_initializing_node"] = true if initializing_node.size==0
+    node.override["cluster_name"] = cluster_name
 
     case platform_family
         when "debian"
@@ -69,13 +70,6 @@ if is_cluster
             package "corosync"
             package "cluster-glue"
             package "resource-agents"
-
-            script "stop cluster node services" do
-                interpreter "bash"
-                user "root"
-                code <<-EOH
-                EOH
-            end
 
             script "configure service startup" do
                 interpreter "bash"
@@ -93,6 +87,7 @@ if is_cluster
 
                     touch /etc/corosync/startup.initialized
                 EOH
+                notifies :run, "script[restart cluster node services]"
                 only_if { !File.exists?("/etc/corosync/startup.initialized") }
             end
 
@@ -110,9 +105,8 @@ if is_cluster
                         node.save
 
                         Chef::Log.debug("Saved generated authorization key: #{auth_key}")
-
-                        resources(:script => "restart cluster node services").run_action(:run)
                     end
+                    notifies :run, "script[restart cluster node services]"
                 end
             else
                 ruby_block "saving cluster authorization key" do

@@ -91,3 +91,6 @@ default["env"]["authorized_keys_file"] = "authorized_keys"
 #   }
 #
 default["clusters"] = { }
+
+default["cluster_name"] = nil
+default["cluster_initializing_node"] = false
