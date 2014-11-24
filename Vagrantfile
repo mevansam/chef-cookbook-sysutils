@@ -22,12 +22,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.omnibus.chef_version = :latest
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "opscode_ubuntu-12.04_chef-provisionerless"
-  
+  config.vm.box = "chef/ubuntu-14.04"
+
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "https://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-12.04_chef-provisionerless.box"
-  
+  config.vm.box_url = "https://vagrantcloud.com/chef/boxes/ubuntu-14.04"
+
   # Assign this VM to a host-only network IP, allowing you to access it
   # via the IP. Host-only networks can talk to the host machine as well as
   # any other machines on the same network, but cannot be accessed (through this
@@ -76,11 +76,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provision :chef_client do |chef|
 
-    chef.arguments = "-l debug"
-    chef.chef_server_url = "https://c2c-oschef-mmk1.fmr.com"
-    chef.validation_key_path = "~/.chef/chef-validator.pem"
-    chef.validation_client_name = "chef-validator"
-    chef.node_name = "a292082_sysutils_dev"
+    chef.arguments = "-l info"
+    chef.chef_server_url = "http://192.168.50.1:9999"
+    chef.validation_key_path = "./.chef/chef-zero_validator.pem"
+    chef.validation_client_name = "chef-zero_validator"
+    chef.node_name = "sysutils-test-client"
 
     chef.json = {
       env: {
