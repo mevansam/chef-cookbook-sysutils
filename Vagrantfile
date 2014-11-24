@@ -13,10 +13,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.hostname = "sysutils-berkshelf"
 
-  # Configure proxy
-  config.proxy.http     = "http://http.proxy.fmr.com:8000"
-  config.proxy.https    = "http://http.proxy.fmr.com:8000"
-  config.proxy.no_proxy = "localhost,127.0.0.1,*.fmr.com"
+  # Configure proxy - requires vagrant-proxyconf plugin
+  #config.proxy.http     = "http://http.proxy.com:8888"
+  #config.proxy.https    = "http://http.proxy.com:8888"
+  #config.proxy.no_proxy = "localhost,127.0.0.1,*.mevansam.org"
 
   # Set the version of chef to install using the vagrant-omnibus plugin
   config.omnibus.chef_version = :latest
@@ -32,7 +32,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # via the IP. Host-only networks can talk to the host machine as well as
   # any other machines on the same network, but cannot be accessed (through this
   # network interface) by any external networks.
-  config.vm.network :private_network, type: "dhcp"
+  config.vm.network :private_network, ip: "192.168.50.100"
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
@@ -78,13 +78,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     chef.arguments = "-l debug"
     chef.chef_server_url = "https://c2c-oschef-mmk1.fmr.com"
-    chef.validation_key_path = "../../../.chef/chef-validator.pem"
+    chef.validation_key_path = "~/.chef/chef-validator.pem"
     chef.validation_client_name = "chef-validator"
     chef.node_name = "a292082_sysutils_dev"
 
     chef.json = {
       env: {
-        http_proxy: "http://http.proxy.fmr.com:8000",
         sysctl_add: [
             [ "kernel.core_pattern", "/apps/log/cores/core.%p" ],
             [ "kernel.sem", "250 32000 128 2048" ],
