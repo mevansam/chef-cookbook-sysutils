@@ -22,6 +22,9 @@ module ::SysUtils # rubocop:disable Documentation
 
         def get_encryption_secret(node)
 
+            data_bag_secret = node["env"]["encryption_key"]
+            return data_bag_secret unless data_bag_secret.nil?
+
             data_bag_secret_file = node["env"]["secret_file_path"] ||
                 Chef::Config[:encrypted_data_bag_secret] ||
                 '/etc/chef/encrypted_data_bag_secret'
