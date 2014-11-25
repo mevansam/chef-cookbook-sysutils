@@ -1,4 +1,4 @@
-
+# Default attributes for sysutils cookbook
 
 default["env"]["secret_file_path"] = nil
 

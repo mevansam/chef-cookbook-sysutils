@@ -2,8 +2,6 @@
 # Cookbook Name:: sysutils
 # Recipe:: cluster
 #
-
-#
 # Author: Mevan Samaratunga
 # Email: mevansam@gmail.com
 #
