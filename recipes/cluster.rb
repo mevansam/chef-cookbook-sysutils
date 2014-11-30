@@ -21,45 +21,57 @@
 platform_family = node['platform_family']
 ipaddress = node["ipaddress"]
 
-cluster_name = nil
-cluster_members = nil
-mcast_address = nil
-mcast_port = nil
-is_cluster = false
+cluster_name = node["pacemaker_cluster_name"]
+unless cluster_name.nil?
 
-node["clusters"].each_pair do |name, info|
+    mcast_address = node["pacemaker_mcast_address"]
+    mcast_port = node["pacemaker_mcast_port"]
 
-    members = info["members"]
+    cluster_query = "pacemaker_cluster_name:#{cluster_name} AND chef_environment:#{node.chef_environment}"
 
-    members.each do |member|
+    cluster_members = [ ]
+    search(:node, cluster_query).each do |cluster_node|
 
-        if ipaddress==member[0]
+        Chef::Log.info("Found cluster node '#{cluster_node.name}' for role '#{cluster_name}': " +
+            "ipaddress = #{cluster_node["ipaddress"]}" +
+            "fqdn = #{cluster_node["fqdn"]}, " +
+            "hostname = #{cluster_node["hostname"]}")
 
-            cluster_name = name
-            cluster_members = members
-            mcast_address = info["mcast_address"]
-            mcast_port = info["mcast_port"]
-            is_cluster = true
-            break
-        end
-
-        break if is_cluster
+        cluster_members << [
+            cluster_node["ipaddress"],
+            cluster_node["fqdn"],
+            cluster_node["hostname"] ]
     end
-end 
 
-if is_cluster
+    unless shell("which crm", true).empty?
+        shell("crm status").lines do |l|
 
-    cluster_nodes = search(:node, "cluster_name:#{cluster_name} AND cluster_authkey:*")
+            if l=~/Node .* UNCLEAN \(offline\)/
+
+                f = l.split
+                crm_node_id = f[2][/\((.*)\)/, 1]
+                crm_node_name = f[1]
+
+                Chef::Log.info("Removing Unclean offline node: id=#{crm_node_id}, name=#{crm_node_name}")
+
+                shell!("crm_node --force -R #{crm_node_id}")
+                shell!("cibadmin --delete --obj_type nodes --crm_xml '<node uname=\"#{crm_node_name}\"/>'")
+                shell!("cibadmin --delete --obj_type status --crm_xml '<node_state uname=\"#{crm_node_name}\"/>'")
+            end
+        end
+    end
+
+    auth_cluster_nodes = search(:node, "#{cluster_query} AND cluster_authkey:*")
 
     auth_key = nil
-    if cluster_nodes.size>0
-        auth_key = cluster_nodes.first["cluster_authkey"]
+    if auth_cluster_nodes.size>0
+        auth_key = auth_cluster_nodes.first["cluster_authkey"]
         node.set["cluster_authkey"] = auth_key
     end
 
-    initializing_node = search(:node, "cluster_name:#{cluster_name} AND cluster_initializing_node:true")
-    node.override["cluster_initializing_node"] = true if initializing_node.size==0
-    node.override["cluster_name"] = cluster_name
+    initializing_node = search(:node, "#{cluster_query} AND cluster_initializing_node:true")
+    node.set["cluster_initializing_node"] = true if initializing_node.size==0
+    node.save
 
     case platform_family
         when "debian"
@@ -141,13 +153,14 @@ if is_cluster
                 notifies :run, "script[restart cluster node services]"
             end
 
-            template "/etc/hosts" do
-                source "cluster_node_hosts.erb"
-                mode "0644"
-                variables(
-                    :cluster_members => cluster_members
-                )
-                notifies :run, "script[restart cluster node services]"
+            cluster_members.each do |member|
+
+                hostsfile_entry member[0] do
+                    hostname member[1]
+                    aliases [ member[2] ]
+                    comment 'Required by corosync to discover cluster members'
+                    notifies :run, "script[restart cluster node services]"
+                end
             end
 
             script "restart cluster node services" do
