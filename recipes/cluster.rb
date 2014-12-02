@@ -159,7 +159,6 @@ unless cluster_name.nil?
                     hostname member[1]
                     aliases [ member[2] ]
                     comment 'Required by corosync to discover cluster members'
-                    notifies :run, "script[restart cluster node services]"
                 end
             end
 
