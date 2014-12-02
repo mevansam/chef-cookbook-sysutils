@@ -7,7 +7,6 @@ long_description 'Resources for common environment configurations such as sysctl
 version          '1.0.0'
 
 depends          'modules', '>= 0.1.2'
-depends          'network_interfaces', '1.0.0'
 depends          'hostsfile', '~> 2.4.5'
 depends          'apt', '2.4.0'
 depends          'yum', '3.2.2'
