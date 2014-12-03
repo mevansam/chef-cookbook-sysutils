@@ -34,12 +34,10 @@ unless cluster_name.nil?
 
         Chef::Log.info("Found cluster node '#{cluster_node.name}' for role '#{cluster_name}': " +
             "ipaddress = #{cluster_node["ipaddress"]}" +
-            "fqdn = #{cluster_node["fqdn"]}, " +
             "hostname = #{cluster_node["hostname"]}")
 
         cluster_members << [
             cluster_node["ipaddress"],
-            cluster_node["fqdn"],
             cluster_node["hostname"] ]
     end
 
@@ -157,7 +155,6 @@ unless cluster_name.nil?
 
                 hostsfile_entry member[0] do
                     hostname member[1]
-                    aliases [ member[2] ]
                     comment 'Required by corosync to discover cluster members'
                 end
             end
