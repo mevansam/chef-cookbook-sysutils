@@ -17,7 +17,7 @@
 
 require 'rubygems'
 require 'rubygems/dependency_installer'
-require 'rubygems/doc_manager'
+# require 'rubygems/doc_manager'
 require 'mixlib/shellout'
 
 module ::SysUtils # rubocop:disable Documentation
@@ -31,16 +31,16 @@ module ::SysUtils # rubocop:disable Documentation
 
         def install_gem(name, options = {})
             version = options.fetch(:version, Gem::Requirement.default)
-            generate_rdoc = options.fetch(:generate_rdoc, false)
+            # generate_rdoc = options.fetch(:generate_rdoc, false)
 
             return if gem_installed? name, version
 
             installed_gems = Gem::DependencyInstaller.new.install name, version
 
-            if generate_rdoc
-                installed_gems.each { |gem| Gem::DocManager.new(gem).generate_ri }
-                Gem::DocManager.update_ri_cache
-            end
+            # if generate_rdoc
+            #     installed_gems.each { |gem| Gem::DocManager.new(gem).generate_ri }
+            #     Gem::DocManager.update_ri_cache
+            # end
         end
 
         def shell(cmd, ignore_error = false)
