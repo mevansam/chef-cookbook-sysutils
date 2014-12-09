@@ -17,10 +17,10 @@
 
 include ::SysUtils::Helper
 
-install_gem("net-ssh") if !gem_installed?("net-ssh")
+install_gem("net-ssh")
 require "net/ssh"
 
-install_gem("net-scp") if !gem_installed?("net-scp")
+install_gem("net-scp")
 require 'net/scp'
 
 module ::SysUtils # rubocop:disable Documentation
