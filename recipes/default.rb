@@ -162,11 +162,11 @@ end
 
 # Setup package repos and install packages
 
+needs_update = false
+
 if !node.attribute?("package_repos_updated") &&
     node["env"]["package_repos"].has_key?(platform_family) &&
     node["env"]["package_repos"][platform_family].size > 0
-
-    needs_update = false
 
     package_repos = node.attribute?("sysutils") && node["sysutils"].attribute?("package_repos") ?
         node["sysutils"]["package_repos"] : [ ]
@@ -232,6 +232,13 @@ if !node.attribute?("package_repos_updated") &&
 end
 
 if node["env"]["packages"].has_key?(platform_family)
+
+    # If on Debian platform and no update was done as 
+    # part of a repo add then update the apt cache
+    execute "update package cache" do
+        command "apt-get update"
+        only_if { platform_family=='debian' && !needs_update }
+    end
 
     node["env"]["packages"][platform_family].each do |pkg| 
 
