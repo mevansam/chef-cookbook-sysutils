@@ -306,3 +306,38 @@ if !users.nil? &&
         end
     end
 end
+
+# Setup cron jobs
+
+if node["env"]["cron_jobs"]
+
+    # Ensure cron service is installed
+    include_recipe 'cron::default'
+
+    node["env"]["cron_jobs"].each do |name, params|
+
+        Chef::Log.info("Adding cron job '#{name}' with params: #{params}")
+
+        cron_d name do
+
+            predefined_value params["predefined_value"] if params["predefined_value"]
+
+            command params["command"]
+
+            minute   params["minute"]  if params["minute"]
+            hour     params["hour"]    if params["hour"] 
+            day      params["day"]     if params["day"]
+            month    params["month"]   if params["month"]
+            weekday  params["weekday"] if params["weekday"]
+
+            user        params["user"]        if params["user"]
+            mailto      params["mailto"]      if params["mailto"]
+            path        params["path"]        if params["path"]
+            home        params["home"]        if params["home"]
+            shell       params["shell"]       if params["shell"]
+            comment     params["comment"]     if params["comment"]
+            environment params["environment"] if params["environment"]
+            mode        params["mode"]        if params["mode"]
+        end
+    end
+end
