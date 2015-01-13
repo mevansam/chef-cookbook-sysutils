@@ -168,8 +168,7 @@ if !node.attribute?("package_repos_updated") &&
     node["env"]["package_repos"].has_key?(platform_family) &&
     node["env"]["package_repos"][platform_family].size > 0
 
-    package_repos = node.attribute?("sysutils") && node["sysutils"].attribute?("package_repos") ?
-        node["sysutils"]["package_repos"] : [ ]
+    package_repos = node['env']['package_repos']['added'] || [ ]
 
     node["env"]["package_repos"][platform_family].each do |repo_detail|
 
@@ -203,42 +202,39 @@ if !node.attribute?("package_repos_updated") &&
             needs_update = true
         end
     end
-    node.set['sysutils']['package_repos'] = package_repos
+    node.set['env']['package_repos']['added'] = package_repos
     node.save
+end
 
-    if needs_update
-        case platform_family
-            when "fedora", "rhel"
-                execute "update package cache" do
-                    command "yum clean all"
+if needs_update || !node['env']['package_repos']['cache_updated']
+
+    case platform_family
+        when "fedora", "rhel"
+            execute "update package cache" do
+                command "yum clean all"
+            end
+            ruby_block "refresh chef yum cache" do
+                block do
+                    yum = Chef::Provider::Package::Yum::YumCache.instance
+                    yum.reload
+                    yum.refresh
                 end
-                ruby_block "refresh chef yum cache" do
-                    block do
-                        yum = Chef::Provider::Package::Yum::YumCache.instance
-                        yum.reload
-                        yum.refresh
-                    end
-                end
-            when "debian"
-                execute "update package cache" do
-                    command "
-                        apt-get -y --force-yes install ubuntu-cloud-keyring;
-                        apt-get -y --force-yes install gplhost-archive-keyring;
-                        apt-get update
-                    "
-                end
-        end
+            end
+        when "debian"
+            execute "update package cache" do
+                command "
+                    apt-get -y --force-yes install ubuntu-cloud-keyring;
+                    apt-get -y --force-yes install gplhost-archive-keyring;
+                    apt-get update
+                "
+            end
     end
+
+    node.set["env"]["package_repos"]["cache_updated"] = true
+    node.save
 end
 
 if node["env"]["packages"].has_key?(platform_family)
-
-    # If on Debian platform and no update was done as 
-    # part of a repo add then update the apt cache
-    execute "update package cache" do
-        command "apt-get update"
-        only_if { platform_family=='debian' && !needs_update }
-    end
 
     node["env"]["packages"][platform_family].each do |pkg| 
 

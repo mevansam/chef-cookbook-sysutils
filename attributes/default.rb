@@ -41,17 +41,18 @@ default["env"]["ulimit_remove"] = [ ]
 # Enable/Disable local firewall
 default["env"]["firewall"] = true
 
-default["env"]["package_repos"]["rhel"] = [ ]
-
 # Each repo should be an array of [ name uri, distribution, components, keyserver, key ]
 # Only the name and uri are required and all the other values are optional
+default["env"]["package_repos"]["rhel"] = [ ]
 default["env"]["package_repos"]["debian"] = [ ]
 
-default["env"]["packages"]["rhel"] = [ ]
+# Indicates if package cache needs to be updated
+default["env"]["package_repos"]["cache_updated"] = false
 
 # Each package is either a string or an array of [ cmd, package ] where
 # cmd is a list of commands to execute in the shell such as debconf
 # selections.
+default["env"]["packages"]["rhel"] = [ ]
 default["env"]["packages"]["debian"] = [ ]
 
 # Add user groups
