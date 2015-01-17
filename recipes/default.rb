@@ -285,6 +285,7 @@ if !users.nil? &&
             supports :manage_home => true
             home u[1]
             gid u[2] 
+            shell "/bin/bash"
         end
 
         if u[3]
