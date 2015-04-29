@@ -338,3 +338,51 @@ if node["env"]["cron_jobs"]
         end
     end
 end
+
+# Export directories via NFS
+
+if node["env"]["exports"]
+
+    # Ensure nfs server is installed
+    include_recipe 'nfs::server'
+
+    node["env"]["exports"].each do |export|
+
+        path = export['path']
+        directory path do
+            mode '0777'
+            recursive true
+        end
+
+        nfs_export path do
+            network export['network']
+            writeable export['writeable']
+            sync export['sync']
+            options export['options']
+        end
+    end
+end
+
+if node["env"]["imports"]
+
+    # Ensure nfs client is installed
+    include_recipe 'nfs'
+
+    node["env"]["imports"].each do |import|
+
+        mount_path = import['mount_path']
+
+        directory mount_path do
+            group import['group'] if import['group']
+            owner import['owner'] if import['owner']
+            recursive true
+        end
+
+        mount mount_path do
+          device "#{import['host']}:#{import['path']}"
+          fstype "nfs"
+          options import['options'] || 'rw'
+          action [:mount, :enable]
+        end
+    end
+end

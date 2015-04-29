@@ -71,7 +71,48 @@ default["env"]["users"] = [ ]
 # Override the file in which to add authorized public keys for ssh logins
 default["env"]["authorized_keys_file"] = "authorized_keys"
 
-# Pacemaker cluster
-default["pacemaker_cluster_name"] = nil
-default["pacemaker_mcast_address"] = nil
-default["pacemaker_mcast_port"] = nil
+# Cron jobs - see 'cron' cookbook
+# 
+# Map of:
+#  
+# name => {  
+#   predefined_value => '',
+#   command => '',
+#   minute => '',
+#   hour => '',
+#   day => '',
+#   month => '',
+#   weekday => '',
+#   user => '',
+#   mailto => '',
+#   path => '',
+#   home => '',
+#   shell => '',
+#   comment => '',
+#   environment => '',
+#   mode => ''
+# }
+#
+default["env"]["cron_jobs"] = nil
+
+# Export folders via NFS - see 'nfs' cookbook
+#
+# Array of:
+#   path: exported folder
+#   network: export network CIDR or IPs
+#   sync: true of false
+#   options: list of nfs options
+#
+default["env"]["exports"] = nil
+
+# Remote NFS shares to mount.
+#
+# Array of:
+#   mount_path: local path to mount share
+#   group: (optional) group id of mount path
+#   owner: (optional) owner of mount path
+#   host: remote NFS host
+#   path: exported path
+#   options: mount options (default to 'rw')
+#
+default["env"]["imports"] = nil
