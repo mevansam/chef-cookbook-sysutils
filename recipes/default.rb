@@ -69,12 +69,13 @@ if node["env"].has_key?("data_disk") && !node["env"]["data_disk"].nil? && !node[
                 [ -z "$(blkid | grep #{data_disk})"]; then
 
                 echo "**** Formating data disk #{data_disk} with ext4 file system..."
-                mkfs.ext4 #{data_disk}
-                if [ $? -eq 0 ]; then
-                    mkdir -p #{data_path}
-                fi
+                mkfs.ext4 -F #{data_disk}
             fi
         EOH
+    end
+
+    directory data_path do
+        recursive true
     end
 
     mount data_path do
